@@ -5,7 +5,6 @@ use hyprland::{
 };
 
 mod cli;
-// mod queries;
 
 use cli::CliArgs;
 use cli::Query;
