@@ -3,7 +3,11 @@ use clap::{Parser, ValueEnum};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Query {
     /// The workspace that is currently focused
-    CurrentWorkspace,
+    ActiveWorkspace,
+    /// All workspaces as an array
+    Workspaces,
+    /// The currently focused window
+    ActiveWindow,
 }
 
 #[derive(Parser, Debug)]
@@ -13,7 +17,7 @@ pub struct CliArgs {
     #[arg(short, long, value_enum)]
     pub query: Query,
 
-    /// Whether to keep waiting for events instead of exiting after the initial query
+    /// Wait for corresponding events and re-query when they happen
     #[arg(short, long)]
     pub subscribe: bool,
 }
