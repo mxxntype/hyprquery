@@ -34,6 +34,7 @@ fn main() -> Result<(), HyprError> {
 
             handler();
             if args.subscribe {
+                // TODO: Refactor this horrible shit
                 let mut event_listener = EventListenerMutable::new();
                 event_listener.add_workspace_added_handler(move |_, _| handler());
                 event_listener.add_workspace_destroy_handler(move |_, _| handler());
