@@ -2,7 +2,7 @@ use clap::Parser;
 use hyprland::{
     data::Workspace,
     event_listener::EventListenerMutable,
-    shared::{HyprData, HyprDataActive, HyprDataActiveOptional, HyprError},
+    shared::{Address, HyprData, HyprDataActive, HyprDataActiveOptional, HyprError},
 };
 
 mod cli;
@@ -27,6 +27,20 @@ fn main() -> Result<(), HyprError> {
             let handler = || {
                 let workspaces = hyprland::data::Workspaces::get().unwrap();
                 let mut workspaces = workspaces.collect::<Vec<Workspace>>();
+                for id in 1..=10 {
+                    if !workspaces.iter().any(|ws| ws.id == id) {
+                        let monitor = workspaces.get(0).unwrap().monitor.clone();
+                        workspaces.push(Workspace {
+                            id,
+                            name: id.to_string(),
+                            monitor,
+                            windows: 0,
+                            fullscreen: false,
+                            last_window: Address::new(String::new()),
+                            last_window_title: String::new(),
+                        })
+                    }
+                }
                 workspaces.sort_unstable_by_key(|k| k.id);
                 let j = serde_json::to_string(&workspaces).unwrap();
                 println!("{}", j);
