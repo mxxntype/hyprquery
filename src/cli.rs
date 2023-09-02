@@ -8,6 +8,8 @@ pub enum Query {
     Workspaces,
     /// The currently focused window
     ActiveWindow,
+    /// The current keyboard layout
+    KeyboardLayout,
 }
 
 #[derive(Parser, Debug)]

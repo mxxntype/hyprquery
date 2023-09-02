@@ -70,9 +70,32 @@ fn main() -> Result<(), HyprError> {
             };
 
             handler();
-            let mut event_listener = EventListenerMutable::new();
-            event_listener.add_active_window_change_handler(move |_, _| handler());
-            event_listener.start_listener()?
+            if args.subscribe {
+                let mut event_listener = EventListenerMutable::new();
+                event_listener.add_active_window_change_handler(move |_, _| handler());
+                event_listener.start_listener()?
+            }
+        }
+        Query::KeyboardLayout => {
+            let keyboards = hyprland::data::Devices::get()?.keyboards;
+            if let Some(default_laptop_keyboard) = keyboards
+                .iter()
+                .find(|keyboard| keyboard.name == "at-translated-set-2-keyboard")
+            {
+                println!("{}", default_laptop_keyboard.active_keymap);
+            }
+
+            if args.subscribe {
+                let mut event_listener = EventListenerMutable::new();
+                event_listener.add_keyboard_layout_change_handler(|layout_event, _| {
+                    if let Some(extracted_layout_name) =
+                        layout_event.keyboard_name.split(',').nth(1)
+                    {
+                        println!("{}", extracted_layout_name);
+                    }
+                });
+                event_listener.start_listener()?
+            }
         }
     }
     Ok(())
