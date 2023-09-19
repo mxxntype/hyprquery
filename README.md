@@ -4,5 +4,5 @@
 
 #### Todo:
 - [ ] Add more `queries`
-- [ ] Add a `flake.nix`
+- [x] Add a `flake.nix`
 - [ ] Refactor the code to be at least somewhat adequate
