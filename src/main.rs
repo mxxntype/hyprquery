@@ -19,7 +19,7 @@ fn main() -> Result<(), HyprError> {
             println!("{}", workspace.id);
             if args.subscribe {
                 let mut event_listener = EventListenerMutable::new();
-                event_listener.add_workspace_change_handler(|a, _| println!("{a}"));
+                event_listener.add_workspace_change_handler(|ws, _| println!("{}", ws));
                 event_listener.start_listener()?
             }
         }
