@@ -14,7 +14,7 @@ pub enum Query {
 
 #[derive(Parser, Debug)]
 // #[commmand(author, version, about, long_about = None)]
-pub struct CliArgs {
+pub struct Args {
     /// What information to query Hyprland for
     #[arg(short, long, value_enum)]
     pub query: Query,

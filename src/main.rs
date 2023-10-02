@@ -7,11 +7,11 @@ use hyprland::{
 
 mod cli;
 
-use cli::CliArgs;
+use cli::Args;
 use cli::Query;
 
 fn main() -> Result<(), HyprError> {
-    let args = CliArgs::parse();
+    let args = Args::parse();
 
     match args.query {
         Query::ActiveWorkspace => {
@@ -19,8 +19,8 @@ fn main() -> Result<(), HyprError> {
             println!("{}", workspace.id);
             if args.subscribe {
                 let mut event_listener = EventListenerMutable::new();
-                event_listener.add_workspace_change_handler(|ws, _| println!("{}", ws));
-                event_listener.start_listener()?
+                event_listener.add_workspace_change_handler(|ws, _| println!("{ws}"));
+                event_listener.start_listener()?;
             }
         }
         Query::Workspaces => {
@@ -38,12 +38,12 @@ fn main() -> Result<(), HyprError> {
                             fullscreen: false,
                             last_window: Address::new(String::new()),
                             last_window_title: String::new(),
-                        })
+                        });
                     }
                 }
-                workspaces.sort_unstable_by_key(|k| k.id);
-                let j = serde_json::to_string(&workspaces).unwrap();
-                println!("{}", j);
+                workspaces.sort_unstable_by_key(|ws| ws.id);
+                let workspaces_json = serde_json::to_string(&workspaces).unwrap();
+                println!("{workspaces_json}");
             };
 
             handler();
@@ -57,7 +57,7 @@ fn main() -> Result<(), HyprError> {
                 event_listener.add_window_close_handler(move |_, _| handler());
                 event_listener.add_window_moved_handler(move |_, _| handler());
                 event_listener.add_window_moved_handler(move |_, _| handler());
-                event_listener.start_listener()?
+                event_listener.start_listener()?;
             }
         }
         Query::ActiveWindow => {
@@ -65,7 +65,7 @@ fn main() -> Result<(), HyprError> {
                 let active_window = hyprland::data::Client::get_active().unwrap();
                 if let Some(window) = active_window {
                     let active_window_json = serde_json::to_string(&window).unwrap();
-                    println!("{}", active_window_json);
+                    println!("{active_window_json}");
                 }
             };
 
@@ -73,7 +73,7 @@ fn main() -> Result<(), HyprError> {
             if args.subscribe {
                 let mut event_listener = EventListenerMutable::new();
                 event_listener.add_active_window_change_handler(move |_, _| handler());
-                event_listener.start_listener()?
+                event_listener.start_listener()?;
             }
         }
         Query::KeyboardLayout => {
@@ -91,10 +91,10 @@ fn main() -> Result<(), HyprError> {
                     if let Some(extracted_layout_name) =
                         layout_event.keyboard_name.split(',').nth(1)
                     {
-                        println!("{}", extracted_layout_name);
+                        println!("{extracted_layout_name}");
                     }
                 });
-                event_listener.start_listener()?
+                event_listener.start_listener()?;
             }
         }
     }
