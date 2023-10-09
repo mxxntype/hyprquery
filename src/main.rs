@@ -1,8 +1,9 @@
 use clap::Parser;
+use color_eyre::Result;
 use hyprland::{
     data::Workspace,
     event_listener::EventListenerMutable,
-    shared::{Address, HyprData, HyprDataActive, HyprDataActiveOptional, HyprError},
+    shared::{Address, HyprData, HyprDataActive, HyprDataActiveOptional},
 };
 
 mod cli;
@@ -10,7 +11,8 @@ mod cli;
 use cli::Args;
 use cli::Query;
 
-fn main() -> Result<(), HyprError> {
+fn main() -> Result<()> {
+    color_eyre::install()?;
     let args = Args::parse();
 
     match args.query {
@@ -62,8 +64,11 @@ fn main() -> Result<(), HyprError> {
         }
         Query::ActiveWindow => {
             let handler = || {
-                let active_window = hyprland::data::Client::get_active().unwrap();
-                if let Some(window) = active_window {
+                if let Some(window) =
+                    // BUG: always panicks for some reason
+                    hyprland::data::Client::get_active()
+                        .expect("could not get active window")
+                {
                     let active_window_json = serde_json::to_string(&window).unwrap();
                     println!("{active_window_json}");
                 }
