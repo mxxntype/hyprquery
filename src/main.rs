@@ -92,11 +92,9 @@ fn main() -> Result<()> {
 
             if args.subscribe {
                 let mut event_listener = EventListenerMutable::new();
-                event_listener.add_keyboard_layout_change_handler(|layout_event, _| {
-                    if let Some(extracted_layout_name) =
-                        layout_event.keyboard_name.split(',').nth(1)
-                    {
-                        println!("{extracted_layout_name}");
+                event_listener.add_keyboard_layout_change_handler(|event, _| {
+                    if let Some(layout) = event.keyboard_name.split(',').nth(1) {
+                        println!("{layout}");
                     }
                 });
                 event_listener.start_listener()?;
