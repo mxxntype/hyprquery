@@ -82,24 +82,34 @@ fn main() -> Result<()> {
             }
         }
         Query::KeyboardLayout => {
+            let printer = |layout: &str| {
+                println!(
+                    "{}",
+                    match layout {
+                        "English (US)" => "English",
+                        _ => layout,
+                    }
+                )
+            };
             let keyboards = hyprland::data::Devices::get()?.keyboards;
-            if let Some(default_laptop_keyboard) = keyboards
+            if let Some(laptop_kb) = keyboards
                 .iter()
-                .find(|keyboard| keyboard.name == "at-translated-set-2-keyboard")
+                .find(|kb| kb.name == "at-translated-set-2-keyboard")
             {
-                println!("{}", default_laptop_keyboard.active_keymap);
+                printer(&laptop_kb.active_keymap);
             }
 
             if args.subscribe {
                 let mut event_listener = EventListenerMutable::new();
-                event_listener.add_keyboard_layout_change_handler(|event, _| {
+                event_listener.add_keyboard_layout_change_handler(move |event, _| {
                     if let Some(layout) = event.keyboard_name.split(',').nth(1) {
-                        println!("{layout}");
+                        printer(layout);
                     }
                 });
                 event_listener.start_listener()?;
             }
         }
     }
+
     Ok(())
 }
