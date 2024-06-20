@@ -14,7 +14,7 @@ complexity = "deny"
 perf = "deny"
 
 [dependencies]
-clap = { version = "4.3.24", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
 color-eyre = "0.6.2"
-hyprland = "0.3.9"
+hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master" }
 serde_json = "1.0.105"

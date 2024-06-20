@@ -5,11 +5,9 @@ mod cli;
 use crate::cli::{Args, Query};
 use clap::Parser;
 use color_eyre::eyre::Result;
-use hyprland::{
-    data::{Client, Workspace},
-    event_listener::EventListenerMutable,
-    shared::{Address, HyprData, HyprDataActive, HyprDataActiveOptional},
-};
+use hyprland::data::{Client, Workspace, Workspaces};
+use hyprland::event_listener::EventListener;
+use hyprland::shared::{Address, HyprData, HyprDataActive, HyprDataActiveOptional};
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -29,9 +27,9 @@ fn handle_active_workspace(args: &Args) -> Result<()> {
     let workspace = hyprland::data::Workspace::get_active()?;
     println!("{}", workspace.id);
     if args.subscribe {
-        let mut listener = EventListenerMutable::new();
-        listener.add_workspace_change_handler(|ws, _| println!("{ws}"));
-        listener.add_active_monitor_change_handler(|ws, _| println!("{}", ws.workspace));
+        let mut listener = EventListener::new();
+        listener.add_workspace_change_handler(|ws| println!("{ws}"));
+        listener.add_active_monitor_change_handler(|ws| println!("{}", ws.workspace));
         listener.start_listener()?;
     }
     Ok(())
@@ -39,8 +37,8 @@ fn handle_active_workspace(args: &Args) -> Result<()> {
 
 fn handle_workspaces(args: &Args) -> Result<()> {
     let handler = || {
-        let workspaces = hyprland::data::Workspaces::get().unwrap();
-        let mut workspaces = workspaces.collect::<Vec<Workspace>>();
+        let workspaces = Workspaces::get().unwrap();
+        let mut workspaces = workspaces.into_iter().collect::<Vec<Workspace>>();
         for id in 1..=10 {
             if !workspaces.iter().any(|ws| ws.id == id) {
                 let monitor = workspaces.first().unwrap().monitor.clone();
@@ -52,6 +50,7 @@ fn handle_workspaces(args: &Args) -> Result<()> {
                     fullscreen: false,
                     last_window: Address::new(String::new()),
                     last_window_title: String::new(),
+                    monitor_id: 0,
                 });
             }
         }
@@ -63,14 +62,14 @@ fn handle_workspaces(args: &Args) -> Result<()> {
     handler();
     if args.subscribe {
         // FIXME: Refactor this horrible shit.
-        let mut listener = EventListenerMutable::new();
-        listener.add_workspace_added_handler(move |_, _| handler());
-        listener.add_workspace_destroy_handler(move |_, _| handler());
-        listener.add_workspace_moved_handler(move |_, _| handler());
-        listener.add_window_open_handler(move |_, _| handler());
-        listener.add_window_close_handler(move |_, _| handler());
-        listener.add_window_moved_handler(move |_, _| handler());
-        listener.add_window_moved_handler(move |_, _| handler());
+        let mut listener = EventListener::new();
+        listener.add_workspace_added_handler(move |_| handler());
+        listener.add_workspace_destroy_handler(move |_| handler());
+        listener.add_workspace_moved_handler(move |_| handler());
+        listener.add_window_open_handler(move |_| handler());
+        listener.add_window_close_handler(move |_| handler());
+        listener.add_window_moved_handler(move |_| handler());
+        listener.add_window_moved_handler(move |_| handler());
         listener.start_listener()?;
     }
 
@@ -88,8 +87,8 @@ fn handle_active_window(args: &Args) -> Result<()> {
 
     printer()?;
     if args.subscribe {
-        let mut listener = EventListenerMutable::new();
-        listener.add_active_window_change_handler(move |_, _| {
+        let mut listener = EventListener::new();
+        listener.add_active_window_change_handler(move |_| {
             let _ = printer();
         });
         listener.start_listener()?;
@@ -118,8 +117,8 @@ fn handle_keyboard_layout(args: &Args) -> Result<()> {
     }
 
     if args.subscribe {
-        let mut listener = EventListenerMutable::new();
-        listener.add_keyboard_layout_change_handler(move |event, _| {
+        let mut listener = EventListener::new();
+        listener.add_keyboard_layout_change_handler(move |event| {
             if let Some(layout) = event.keyboard_name.split(',').nth(1) {
                 printer(layout);
             }
