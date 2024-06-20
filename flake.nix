@@ -1,31 +1,20 @@
 {
-  inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nix-community/naersk";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  };
+    inputs = {
+        flake-utils.url = "github:numtide/flake-utils";
+        nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+        crane = {
+            url = "github:ipetkov/crane";
+            inputs.nixpkgs.follows = "nixpkgs";
+        };
+    };
 
-  outputs = {
-    self,
-    flake-utils,
-    naersk,
-    nixpkgs
-  }: flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = (import nixpkgs) {
-        inherit system;
-      };
-      naersk' = pkgs.callPackage naersk {};
-    in {
-      # For `nix build` & `nix run`:
-      defaultPackage = naersk'.buildPackage {
-        src = ./.;
-      };
-
-      # For `nix develop`:
-      devShell = pkgs.mkShell {
-        nativeBuildInputs = with pkgs; [ rustc cargo ];
-      };
-    }
-  );
+    outputs = { nixpkgs, crane, flake-utils, ... }:
+        flake-utils.lib.eachDefaultSystem (system: let
+            pkgs = nixpkgs.legacyPackages.${system};
+            craneLib = crane.mkLib pkgs;
+        in {
+            packages.default = craneLib.buildPackage {
+                src = craneLib.cleanCargoSource ./.;
+            };
+        });
 }
